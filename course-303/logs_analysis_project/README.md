@@ -1,4 +1,4 @@
-## Logs Analysis Project - Udacity Full Stack Web Developer Nanodegree
+## Logs Analysis Project - Udacity Full Stack Web Developer Nanodegree - Andrew Sherman
 
 #### DESCRIPTION
 For this project, my task was to create a reporting tool that prints out reports( in plain text) based on the data in the given database. This reporting tool is a Python program using the `psycopg2` module to connect to the database. This project sets up a mock PostgreSQL database for a fictional news website. The provided Python script uses the psycopg2 library to query the database and produce a report that answers the following three questions:
@@ -7,53 +7,51 @@ For this project, my task was to create a reporting tool that prints out reports
 2. Who are the most popular article authors of all time?
 3. On which days did more than 1% of requests lead to errors?
 
-#### RUNNING THE PROGRAM
-1. To get started, I recommend the user use a virtual machine to ensure they are using the same environment that this project was developed on, running on your computer. You can download [Vagrant](https://www.vagrantup.com/) and [VirtualBox](https://www.virtualbox.org/wiki/Download_Old_Builds_5_1) to install and manage your virtual machine.
-Use `vagrant up` to bring the virtual machine online and `vagrant ssh` to login.
+##  How to access the project?
 
-2. Download the data provided by Udacity [here](https://d17h27t6h515a5.cloudfront.net/topher/2016/August/57b5f748_newsdata/newsdata.zip). Unzip the file in order to extract newsdata.sql. This file should be inside the Vagrant folder. 
+Follow the steps below to access the code of this project:
 
-3. Load the database using `psql -d news -f newsdata.sql`. 
+ 1. If you don't already have the latest version of python download it from the link in requirements.
+ 2. Download and install Vagrant and VirtualBox.
+ 3. Download this Udacity [folder](https://d17h27t6h515a5.cloudfront.net/topher/2017/August/59822701_fsnd-virtual-machine/fsnd-virtual-machine.zip) with preconfigured vagrant settings.
+ 4. Clone this repository.
+ 5. Download [this](https://d17h27t6h515a5.cloudfront.net/topher/2016/August/57b5f748_newsdata/newsdata.zip) database.
+ 6. Navigate to the Udacity folder in your bash interface and inside that cd into the vagrant folder.
+ 7. Open Git Bash and launch the virtual machine with`vagrant up`
+ 8. Once Vagrant installs necessary files use `vagrant ssh` to continue.
+ 9. The command line will now start with vagrant. Here cd into the /vagrant folder.
+ 10. Unpack the  database folder contents downloaded above over here. You can also copy the contents of this repository here.
+ 11.  To load the database type `psql -d news -f newsdata.sql`
+ 12. To run the database type `psql -d news`
+ 13. You must run the commands from the Create views section here to run the python program successfully.
+ 14. Use command `python log-results.py` to run the python program that fetches query results.
 
-4. Connect to the database using `psql -d news`.
+##  Create Views
 
-5. Create the Views given below. Then exit `psql`.
+Views were created to answer the third query in the project with the purpose of leaving the original database unchanged. They also helped break the question down into comprehensible portions.
 
-6. Now execute the Python file - `python logs_analysis.py`.
+The first view code is as follows:
 
+    CREATE VIEW logstar AS
+    SELECT count(*) as stat, 
+    status, cast(time as date) as day
+    FROM log WHERE status like '%404%'
+    GROUP BY status, day
+    ORDER BY stat desc limit 3;
 
-#### CREATE THE FOLLOWING VIEWS FOR QUESTION 2 AND QUESTION 3:
+The second view code is as follows:
 
-##### Views for Question 2
-```sql
-CREATE VIEW article_authors AS
-SELECT title, name
-FROM articles, authors
-WHERE articles.author = authors.id;
-```
-```sql 
-CREATE VIEW article_views AS
-SELECT title, count(log.id) as views
-FROM articles, log
-WHERE log.path = CONCAT('/article/', articles.slug)
-GROUP BY articles.title
-ORDER BY views desc;
-```
+    CREATE VIEW totalvisitors AS
+    SELECT count(*) as visitors,
+    cast(time as date) as errortime
+    FROM log
+    GROUP BY errortime;
 
-##### Views for Question 3
-```sql
-CREATE VIEW logs AS
-SELECT to_char(time,'DD-MON-YYYY') as Date, count(*) as LogCount
-FROM log
-GROUP BY Date;
-```
-```sql
-CREATE VIEW errorlogs AS
-SELECT to_char(time,'DD-MON-YYYY') as Date, count(*) as ErrorCount
-FROM log
-WHERE STATUS = '404 NOT FOUND'
-GROUP BY Date;
-```
+The third and last view code is as follows:
+
+    CREATE VIEW errorcount AS
+    SELECT * from logstar join totalvisitors
+    ON logstar.day = totalvisitors.errortime;
 
 
 
